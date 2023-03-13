@@ -67,7 +67,7 @@ export default class HttpUtil {
       onUploadProgress: processCallback,
     };
 
-    axios
+    return axios
       .post(url, formData, config)
       .then(function (response) {
         SafeUtil.safeCallback(successCallback)(response);

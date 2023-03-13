@@ -147,7 +147,9 @@ let LangZh = {
     unCompatibleBrowser: "当前浏览器不支持，请切换浏览器尝试",
     canIUse: "查看当前浏览器是否支持，点击跳转",
     intoRecycleBin: "放入回收站",
-    finishingTip: "后台文件整理中，请稍候..."
+    finishingTip: "后台文件整理中，请稍候...",
+    selectFiles: "选择文件",
+    note: "备注"
   },
   router: {
     allFiles: "全部文件",

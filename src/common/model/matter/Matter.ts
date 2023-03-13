@@ -34,6 +34,8 @@ export default class Matter extends BaseEntity {
   // 文件是否被软删除
   deleted: boolean = false;
   deleteTime: Date | null = null;
+  // 文件备注
+  note: string = ""
 
   /*
   这部分是辅助UI的字段信息
@@ -90,7 +92,7 @@ export default class Matter extends BaseEntity {
     this.assignEntity("deleteTime", Date);
   }
 
-  getTAG():string {
+  getTAG(): string {
     return "matter"
   }
   getForm(): any {
@@ -468,11 +470,15 @@ export default class Matter extends BaseEntity {
 
     //验证是否装填好
     if (!this.validate()) {
+      console.log(11111);
+
       return;
     }
 
     //验证用户填写的过滤条件是否正确
     if (!this.validateFilter()) {
+      console.log(22222);
+
       return;
     }
 
@@ -490,14 +496,15 @@ export default class Matter extends BaseEntity {
     formData.append("file", that.file!);
     formData.append("alien", that.alien.toString());
     formData.append("privacy", that.privacy.toString());
-
+    formData.append("note", that.note)
+    
     //闭包
     let lastTimeStamp = new Date().getTime();
     let lastSize = 0;
 
     that.loading = true;
 
-    HttpUtil.httpPostFile(
+    return HttpUtil.httpPostFile(
       Matter.URL_MATTER_UPLOAD,
       formData,
       function (response: any) {
@@ -562,15 +569,13 @@ export default class Matter extends BaseEntity {
   }
 
   getPreviewUrl(downloadTokenUuid?: string): string {
-    return `${EnvUtil.currentHost()}/api/alien/preview/${this.uuid}/${
-      this.name
-    }${downloadTokenUuid ? "?downloadTokenUuid=" + downloadTokenUuid : ""}`;
+    return `${EnvUtil.currentHost()}/api/alien/preview/${this.uuid}/${this.name
+      }${downloadTokenUuid ? "?downloadTokenUuid=" + downloadTokenUuid : ""}`;
   }
 
   getDownloadUrl(downloadTokenUuid?: string): string {
-    return `${EnvUtil.currentHost()}/api/alien/download/${this.uuid}/${
-      this.name
-    }${downloadTokenUuid ? "?downloadTokenUuid=" + downloadTokenUuid : ""}`;
+    return `${EnvUtil.currentHost()}/api/alien/download/${this.uuid}/${this.name
+      }${downloadTokenUuid ? "?downloadTokenUuid=" + downloadTokenUuid : ""}`;
   }
 
   getShareDownloadUrl(
@@ -578,9 +583,8 @@ export default class Matter extends BaseEntity {
     shareCode: string,
     shareRootUuid: string
   ): string {
-    return `${EnvUtil.currentHost()}/api/alien/download/${this.uuid}/${
-      this.name
-    }?shareUuid=${shareUuid}&shareCode=${shareCode}&shareRootUuid=${shareRootUuid}`;
+    return `${EnvUtil.currentHost()}/api/alien/download/${this.uuid}/${this.name
+      }?shareUuid=${shareUuid}&shareCode=${shareCode}&shareRootUuid=${shareRootUuid}`;
   }
 
   getSharePreviewUrl(
@@ -588,8 +592,7 @@ export default class Matter extends BaseEntity {
     shareCode: string,
     shareRootUuid: string
   ): string {
-    return `${EnvUtil.currentHost()}/api/alien/preview/${this.uuid}/${
-      this.name
-    }?shareUuid=${shareUuid}&shareCode=${shareCode}&shareRootUuid=${shareRootUuid}`;
+    return `${EnvUtil.currentHost()}/api/alien/preview/${this.uuid}/${this.name
+      }?shareUuid=${shareUuid}&shareCode=${shareCode}&shareRootUuid=${shareRootUuid}`;
   }
 }

@@ -22,7 +22,7 @@ import {
   RedoOutlined,
   CloseCircleOutlined,
 } from "@ant-design/icons";
-import { Modal, Checkbox, Tooltip, Dropdown, Menu } from "antd";
+import { Modal, Checkbox, Tooltip, Dropdown, Menu, Space } from "antd";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import SafeUtil from "../../../common/util/SafeUtil";
 import ClipboardUtil from "../../../common/util/ClipboardUtil";
@@ -41,7 +41,7 @@ interface IProps {
   onGoToDirectory?: (id: string) => any;
 }
 
-interface IState {}
+interface IState { }
 
 export default class MatterPanel extends TankComponent<IProps, IState> {
   // 正在重命名的临时字段
@@ -565,16 +565,23 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
                       />
                     </span>
                   ) : (
-                    <span className="matter-name">
-                      {matter.name}
-                      {!matter.dir && !matter.privacy && (
-                        <Tooltip
-                          title={Lang.t("matter.publicFileEveryoneCanVisit")}
-                        >
-                          <UnlockOutlined className="icon" />
-                        </Tooltip>
-                      )}
-                    </span>
+                    <Space size={20}>
+                      <span className="matter-name">
+                        {matter.name}
+                        {!matter.dir && !matter.privacy && (
+                          <Tooltip
+                            title={Lang.t("matter.publicFileEveryoneCanVisit")}
+                          >
+                            <UnlockOutlined className="icon" />
+                          </Tooltip>
+                        )}
+                      </span>
+                      <span style={{ color: "gray" }}>
+                        {matter.note ? `${Lang.t("matter.note")}: ${matter.note}` : ""}
+                      </span>
+
+                    </Space>
+
                   )}
                 </div>
               </div>

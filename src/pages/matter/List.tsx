@@ -1,4 +1,4 @@
-import React, { Children } from "react";
+import React, { Children, createRef } from "react";
 import { RouteComponentProps } from "react-router-dom";
 import "./List.less";
 import TankComponent from "../../common/component/TankComponent";
@@ -19,6 +19,8 @@ import {
   Row,
   Space,
   Upload,
+  Form,
+  InputRef
 } from "antd";
 import MessageBoxUtil from "../../common/util/MessageBoxUtil";
 import {
@@ -27,6 +29,7 @@ import {
   DownloadOutlined,
   DragOutlined,
   ExclamationCircleFilled,
+  FileAddOutlined,
   FolderOutlined,
   MinusSquareOutlined,
   PlusSquareOutlined,
@@ -50,16 +53,25 @@ import SafeUtil from "../../common/util/SafeUtil";
 import MatterSortPanel from "./widget/MatterSortPanel";
 import { UploadRequestOption as RcCustomRequestOptions } from "rc-upload/lib/interface";
 import Capacity from "../layout/widget/Capacity";
+import { RcFile } from "antd/es/upload/interface";
+import { resolve } from "path";
+import { Field } from "rc-field-form";
 
-interface IProps extends RouteComponentProps {}
+interface IProps extends RouteComponentProps { }
 
-interface IState {}
+interface IState { }
 
 export default class List extends TankComponent<IProps, IState> {
   //当前文件夹信息。
   matter = new Matter();
   //准备新建的文件。
   newMatter = new Matter();
+
+  // 备注ref
+  matterNoteRef = createRef<InputRef>()
+  // 上传的文件列表
+  fileList: RcFile[] = []
+  selectedRef = createRef<InputRef>()
 
   //当前选中的文件
   selectedMatters: Matter[] = [];
@@ -276,6 +288,12 @@ export default class List extends TankComponent<IProps, IState> {
     if (file) this.launchUpload(file as any);
   }
 
+  triggerUploadWithNote(fileObj: RcFile[], note = "") {
+    console.log("save file ==> ", note);
+    return this.launchUpload(fileObj as any, this.matter.uuid!, () => { }, note);
+  }
+
+
   debounce(func: Function, wait: number) {
     let timer: any = null;
     return (fileObj: any) => {
@@ -364,15 +382,24 @@ export default class List extends TankComponent<IProps, IState> {
   launchUpload(
     f: File | FileList,
     puuid = this.matter.uuid!,
-    errHandle = () => {}
+    errHandle = () => { },
+    note = "",
   ) {
-    const files = f instanceof FileList ? f : [f];
+    var files: File[] | FileList
+    if (f instanceof File) {
+      files = [f]
+    } else {
+      files = f
+    }
+    // const files = f instanceof FileList ? f : [f];
+    let promiseList: Promise<any>[] = []
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      console.log(file);
       // 判断文件是否是文件夹，是的话则停止上传
       const fileReader = new FileReader();
-      fileReader.readAsDataURL(files[i].slice(0, 3));
+      const data = files[i].slice(0, 3) as any
+      console.log('post data', data);
+      fileReader.readAsDataURL(data);
       fileReader.onerror = () => {
         MessageBoxUtil.error(Lang.t("matter.dropNotDirectory"));
       };
@@ -381,6 +408,7 @@ export default class List extends TankComponent<IProps, IState> {
         m.dir = false;
         m.puuid = puuid;
         m.userUuid = this.user.uuid!;
+        m.note = note
 
         //判断文件大小。
         if (this.user.sizeLimit >= 0) {
@@ -396,7 +424,8 @@ export default class List extends TankComponent<IProps, IState> {
           }
         }
         m.file = file;
-        m.httpUpload(
+
+        const promise = m.httpUpload(
           () => {
             const index = List.uploadMatters.findIndex(
               (matter) => matter === m
@@ -410,10 +439,15 @@ export default class List extends TankComponent<IProps, IState> {
             SafeUtil.safeCallback(errHandle)(msg);
           }
         );
-
+        if (promise !== undefined) {
+          promiseList.push(promise)
+        }
         List.uploadMatters.push(m);
       };
     }
+    console.log('prolist ', promiseList);
+
+    return Promise.all(promiseList)
   }
 
   shareBatch() {
@@ -565,7 +599,7 @@ export default class List extends TankComponent<IProps, IState> {
                 </Button>
               ) : null}
               {pager.data.length &&
-              selectedMatters.length === pager.data.length ? (
+                selectedMatters.length === pager.data.length ? (
                 <Button
                   type="primary"
                   className="mb10"
@@ -615,7 +649,7 @@ export default class List extends TankComponent<IProps, IState> {
                 </>
               ) : null}
 
-              <Upload
+              {/* <Upload
                 className="ant-upload"
                 customRequest={(e) => this.triggerUpload(e)}
                 showUploadList={false}
@@ -625,7 +659,56 @@ export default class List extends TankComponent<IProps, IState> {
                   <CloudUploadOutlined />
                   {Lang.t("matter.upload")}
                 </Button>
-              </Upload>
+              </Upload> */}
+
+              <Button type="primary" className="mb10" onClick={() => {
+                Modal.confirm({
+                  title: Lang.t("matter.upload"),
+                  icon: <CloudUploadOutlined />,
+                  onOk: () => {
+                    const promise = this.triggerUploadWithNote(this.fileList, this.matterNoteRef.current?.input?.value ?? "")
+                    return new Promise((resolve, _) => {
+                      promise.then(resp => {
+                        resolve("success")
+                      })
+                    })
+                  },
+                  afterClose: () => {
+                    this.fileList.length = 0
+                  },
+                  content: (
+                    <Form>
+                      <Form.Item label={Lang.t("matter.note")} name="note">
+                        <Input ref={this.matterNoteRef} allowClear></Input>
+                      </Form.Item>
+                      <Form.Item label={Lang.t("matter.file")}>
+                        <Space>
+                          <Upload
+                            className="ant-upload"
+                            beforeUpload={(file) => {
+                              this.fileList.push(file)
+                              this.selectedRef.current!.input!.value = this.fileList.length.toString()
+                              return false
+                            }}
+                            showUploadList={false}
+                            multiple
+                          >
+                            <Button type="primary" className="mb10">
+                              <FileAddOutlined />
+                              {Lang.t("matter.selectFiles")}
+                            </Button>
+                          </Upload>
+                          <Input bordered={false} readOnly={true} ref={this.selectedRef} prefix="已添加 " style={{ color: "gray" }} />
+                        </Space>
+                      </Form.Item>
+                    </Form>),
+                })
+
+              }}>
+                <CloudUploadOutlined />
+                {Lang.t("matter.upload")}
+              </Button>
+
               <Upload
                 className="ant-upload"
                 customRequest={this.triggerUploadDir}

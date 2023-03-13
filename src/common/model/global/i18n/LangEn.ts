@@ -147,7 +147,9 @@ let LangEn = {
     unCompatibleBrowser: "The current browser does not support it. Please try choose another one",
     canIUse: "To see if the current browser supports it",
     intoRecycleBin: "Recycle bin",
-    finishingTip: "Please wait while files are sorted..."
+    finishingTip: "Please wait while files are sorted...",
+    selectFiles: "Select files",
+    note: "note"
   },
   router: {
     allFiles: "All Files",
