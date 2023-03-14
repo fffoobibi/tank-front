@@ -135,7 +135,7 @@ let LangEn = {
     oneTimeLink: "One time link",
     oneTimeLinkInfo: "One time link will expire after downloading, click to copy",
     imageCache: "Image cache",
-    searchFile: "Search file",
+    searchFile: "Search file, supports remark",
     noContentYet: "No content under this directory yet",
     allFiles: "All Files",
     newDirectory: "New directory",
@@ -149,7 +149,11 @@ let LangEn = {
     intoRecycleBin: "Recycle bin",
     finishingTip: "Please wait while files are sorted...",
     selectFiles: "Select files",
-    note: "note"
+    note: "note",
+    haveBeenAdd: "Have been added",
+    okText:"Ok",
+    cancelText: "Cancel",
+    editNote:"Edit note"
   },
   router: {
     allFiles: "All Files",

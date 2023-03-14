@@ -71,7 +71,7 @@ let LangZh = {
   },
   layout: {
     allFiles: "全部文件",
-    myShare: "我的分享",
+    myShare: "文件分享",
     bin: "回收站",
     setting: "网站设置",
     dashboard: "监控统计",
@@ -135,7 +135,7 @@ let LangZh = {
     oneTimeLink: "一次性链接",
     oneTimeLinkInfo: "使用一次性链接下载后链接立即失效,可以分享这个链接给朋友，点击复制",
     imageCache: "图片缓存",
-    searchFile: "搜索文件",
+    searchFile: "搜索文件, 支持备注",
     noContentYet: "该目录下暂无任何内容",
     allFiles: "全部文件",
     newDirectory: "新建文件夹",
@@ -149,7 +149,11 @@ let LangZh = {
     intoRecycleBin: "放入回收站",
     finishingTip: "后台文件整理中，请稍候...",
     selectFiles: "选择文件",
-    note: "备注"
+    note: "备注",
+    haveBeenAdd: "已添加",
+    okText:"确认",
+    cancelText: "取消",
+    editNote:"修改备注"
   },
   router: {
     allFiles: "全部文件",

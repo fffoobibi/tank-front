@@ -1,5 +1,5 @@
-import React, { Children, createRef } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import React, {Children, createRef} from "react";
+import {RouteComponentProps} from "react-router-dom";
 import "./List.less";
 import TankComponent from "../../common/component/TankComponent";
 import Pager from "../../common/model/base/Pager";
@@ -9,19 +9,7 @@ import Director from "./widget/Director";
 import SortDirection from "../../common/model/base/SortDirection";
 import MatterPanel from "./widget/MatterPanel";
 import UploadMatterPanel from "./widget/UploadMatterPanel";
-import {
-  Button,
-  Col,
-  Empty,
-  Input,
-  Modal,
-  Pagination,
-  Row,
-  Space,
-  Upload,
-  Form,
-  InputRef
-} from "antd";
+import {Button, Col, Empty, Form, Input, InputRef, Modal, Pagination, Row, Space, Upload} from "antd";
 import MessageBoxUtil from "../../common/util/MessageBoxUtil";
 import {
   CloudUploadOutlined,
@@ -38,7 +26,7 @@ import {
 } from "@ant-design/icons";
 import ImagePreviewer from "../widget/previewer/ImagePreviewer";
 import Sun from "../../common/model/global/Sun";
-import { UserRole } from "../../common/model/user/UserRole";
+import {UserRole} from "../../common/model/user/UserRole";
 import StringUtil from "../../common/util/StringUtil";
 import MoveBatchModal from "./widget/MoveBatchModal";
 import ShareOperationModal from "./widget/ShareOperationModal";
@@ -51,15 +39,15 @@ import Lang from "../../common/model/global/Lang";
 import FileUtil from "../../common/util/FileUtil";
 import SafeUtil from "../../common/util/SafeUtil";
 import MatterSortPanel from "./widget/MatterSortPanel";
-import { UploadRequestOption as RcCustomRequestOptions } from "rc-upload/lib/interface";
+import {UploadRequestOption as RcCustomRequestOptions} from "rc-upload/lib/interface";
 import Capacity from "../layout/widget/Capacity";
-import { RcFile } from "antd/es/upload/interface";
-import { resolve } from "path";
-import { Field } from "rc-field-form";
+import {RcFile} from "antd/es/upload/interface";
 
-interface IProps extends RouteComponentProps { }
+interface IProps extends RouteComponentProps {
+}
 
-interface IState { }
+interface IState {
+}
 
 export default class List extends TankComponent<IProps, IState> {
   //当前文件夹信息。
@@ -68,7 +56,8 @@ export default class List extends TankComponent<IProps, IState> {
   newMatter = new Matter();
 
   // 备注ref
-  matterNoteRef = createRef<InputRef>()
+  // matterNoteRef = createRef<InputRef>()
+  matterNotes: string = ""
   // 上传的文件列表
   fileList: RcFile[] = []
   selectedRef = createRef<InputRef>()
@@ -284,20 +273,21 @@ export default class List extends TankComponent<IProps, IState> {
   }
 
   triggerUpload(fileObj: RcCustomRequestOptions) {
-    const { file } = fileObj;
+    const {file} = fileObj;
     if (file) this.launchUpload(file as any);
   }
 
   triggerUploadWithNote(fileObj: RcFile[], note = "") {
-    console.log("save file ==> ", note);
-    return this.launchUpload(fileObj as any, this.matter.uuid!, () => { }, note);
+    console.log("upload note", note)
+    return this.launchUpload(fileObj as any, this.matter.uuid!, () => {
+    }, note);
   }
 
 
   debounce(func: Function, wait: number) {
     let timer: any = null;
     return (fileObj: any) => {
-      const { file } = fileObj;
+      const {file} = fileObj;
       this.tempUploadList.push(file);
       if (timer) {
         clearTimeout(timer);
@@ -315,7 +305,7 @@ export default class List extends TankComponent<IProps, IState> {
       const url = FileUtil.getErrorLogsToCSVUrl(this.uploadErrorLogs);
       Modal.confirm({
         title: Lang.t("matter.uploadInfo"),
-        icon: <ExclamationCircleFilled twoToneColor="#FFDC00" />,
+        icon: <ExclamationCircleFilled twoToneColor="#FFDC00"/>,
         content: Lang.t("matter.uploadErrorInfo"),
         okText: Lang.t("matter.exportCSV"),
         onOk: () => {
@@ -382,7 +372,8 @@ export default class List extends TankComponent<IProps, IState> {
   launchUpload(
     f: File | FileList,
     puuid = this.matter.uuid!,
-    errHandle = () => { },
+    errHandle = () => {
+    },
     note = "",
   ) {
     var files: File[] | FileList
@@ -398,7 +389,7 @@ export default class List extends TankComponent<IProps, IState> {
       // 判断文件是否是文件夹，是的话则停止上传
       const fileReader = new FileReader();
       const data = files[i].slice(0, 3) as any
-      console.log('post data', data);
+      // console.log('post data', data);
       fileReader.readAsDataURL(data);
       fileReader.onerror = () => {
         MessageBoxUtil.error(Lang.t("matter.dropNotDirectory"));
@@ -445,8 +436,6 @@ export default class List extends TankComponent<IProps, IState> {
         List.uploadMatters.push(m);
       };
     }
-    console.log('prolist ', promiseList);
-
     return Promise.all(promiseList)
   }
 
@@ -519,7 +508,7 @@ export default class List extends TankComponent<IProps, IState> {
     this.pager.setFilterValue("name", null);
     this.pager.page = 0;
     const query = this.pager.getParams();
-    Sun.navigateQueryTo({ path: "/matter/list", query });
+    Sun.navigateQueryTo({path: "/matter/list", query});
     this.refresh();
   }
 
@@ -575,15 +564,15 @@ export default class List extends TankComponent<IProps, IState> {
   }
 
   render() {
-    const { pager, director, selectedMatters, dragEnterCount } = this;
+    const {pager, director, selectedMatters, dragEnterCount} = this;
     return (
       <div className="matter-list">
         {dragEnterCount > 0 ? (
           <div className="obscure">
-            <CloudUploadOutlined className="white f50" />
+            <CloudUploadOutlined className="white f50"/>
           </div>
         ) : null}
-        <BreadcrumbPanel breadcrumbModels={this.breadcrumbModels} />
+        <BreadcrumbPanel breadcrumbModels={this.breadcrumbModels}/>
 
         <Row>
           <Col xs={24} sm={24} md={14} lg={16} className="mt10">
@@ -594,18 +583,18 @@ export default class List extends TankComponent<IProps, IState> {
                   className="mb10"
                   onClick={() => this.checkAll()}
                 >
-                  <PlusSquareOutlined />
+                  <PlusSquareOutlined/>
                   {Lang.t("selectAll")}
                 </Button>
               ) : null}
               {pager.data.length &&
-                selectedMatters.length === pager.data.length ? (
+              selectedMatters.length === pager.data.length ? (
                 <Button
                   type="primary"
                   className="mb10"
                   onClick={() => this.checkNone()}
                 >
-                  <MinusSquareOutlined />
+                  <MinusSquareOutlined/>
                   {Lang.t("cancel")}
                 </Button>
               ) : null}
@@ -616,7 +605,7 @@ export default class List extends TankComponent<IProps, IState> {
                     className="mb10"
                     onClick={() => this.deleteBatch()}
                   >
-                    <DeleteOutlined />
+                    <DeleteOutlined/>
                     {Lang.t("delete")}
                   </Button>
 
@@ -625,7 +614,7 @@ export default class List extends TankComponent<IProps, IState> {
                     className="mb10"
                     onClick={() => this.downloadZip()}
                   >
-                    <DownloadOutlined />
+                    <DownloadOutlined/>
                     {Lang.t("download")}
                   </Button>
 
@@ -634,7 +623,7 @@ export default class List extends TankComponent<IProps, IState> {
                     className="mb10"
                     onClick={() => this.toggleMoveBatch()}
                   >
-                    <DragOutlined />
+                    <DragOutlined/>
                     {Lang.t("matter.move")}
                   </Button>
 
@@ -643,7 +632,7 @@ export default class List extends TankComponent<IProps, IState> {
                     className="mb10"
                     onClick={() => this.shareBatch()}
                   >
-                    <ShareAltOutlined />
+                    <ShareAltOutlined/>
                     {Lang.t("matter.share")}
                   </Button>
                 </>
@@ -664,9 +653,11 @@ export default class List extends TankComponent<IProps, IState> {
               <Button type="primary" className="mb10" onClick={() => {
                 Modal.confirm({
                   title: Lang.t("matter.upload"),
-                  icon: <CloudUploadOutlined />,
+                  icon: <CloudUploadOutlined/>,
+                  okText: Lang.t("matter.okText"),
+                  cancelText: Lang.t("matter.cancelText"),
                   onOk: () => {
-                    const promise = this.triggerUploadWithNote(this.fileList, this.matterNoteRef.current?.input?.value ?? "")
+                    const promise = this.triggerUploadWithNote(this.fileList, this.matterNotes)
                     return new Promise((resolve, _) => {
                       promise.then(resp => {
                         resolve("success")
@@ -674,12 +665,15 @@ export default class List extends TankComponent<IProps, IState> {
                     })
                   },
                   afterClose: () => {
+                    this.matterNotes = ""
                     this.fileList.length = 0
                   },
                   content: (
                     <Form>
                       <Form.Item label={Lang.t("matter.note")} name="note">
-                        <Input ref={this.matterNoteRef} allowClear></Input>
+                        <Input.TextArea onChange={(e) => this.matterNotes = e.target.value} allowClear maxLength={1000}
+                                        showCount={true}
+                                        autoSize={{minRows: 3, maxRows: 8}}></Input.TextArea>
                       </Form.Item>
                       <Form.Item label={Lang.t("matter.file")}>
                         <Space>
@@ -694,18 +688,19 @@ export default class List extends TankComponent<IProps, IState> {
                             multiple
                           >
                             <Button type="primary" className="mb10">
-                              <FileAddOutlined />
+                              <FileAddOutlined/>
                               {Lang.t("matter.selectFiles")}
                             </Button>
                           </Upload>
-                          <Input bordered={false} readOnly={true} ref={this.selectedRef} prefix="已添加 " style={{ color: "gray" }} />
+                          <Input bordered={false} readOnly={true} ref={this.selectedRef}
+                                 prefix={Lang.t("matter.haveBeenAdd") + ": "} style={{color: "gray"}}/>
                         </Space>
                       </Form.Item>
                     </Form>),
                 })
 
               }}>
-                <CloudUploadOutlined />
+                <CloudUploadOutlined/>
                 {Lang.t("matter.upload")}
               </Button>
 
@@ -716,7 +711,7 @@ export default class List extends TankComponent<IProps, IState> {
                 directory
               >
                 <Button type="primary" className="mb10">
-                  <CloudUploadOutlined />
+                  <CloudUploadOutlined/>
                   {Lang.t("matter.uploadDir")}
                 </Button>
               </Upload>
@@ -725,7 +720,7 @@ export default class List extends TankComponent<IProps, IState> {
                 className="mb10"
                 onClick={() => this.createDirectory()}
               >
-                <FolderOutlined />
+                <FolderOutlined/>
                 {Lang.t("matter.create")}
               </Button>
 
@@ -734,7 +729,7 @@ export default class List extends TankComponent<IProps, IState> {
                 className="mb10"
                 onClick={() => this.refresh()}
               >
-                <SyncOutlined />
+                <SyncOutlined/>
                 {Lang.t("refresh")}
               </Button>
             </Space>
@@ -751,11 +746,11 @@ export default class List extends TankComponent<IProps, IState> {
         </Row>
 
         {Children.toArray(
-          List.uploadMatters.map((m) => <UploadMatterPanel matter={m} />)
+          List.uploadMatters.map((m) => <UploadMatterPanel matter={m}/>)
         )}
 
         {pager.data.length ? (
-          <MatterSortPanel pager={pager} refresh={() => this.refresh()} />
+          <MatterSortPanel pager={pager} refresh={() => this.refresh()}/>
         ) : null}
 
         {director.createMode ? (
@@ -780,7 +775,7 @@ export default class List extends TankComponent<IProps, IState> {
               />
             ))
           ) : (
-            <Empty description={Lang.t("matter.noContentYet")} />
+            <Empty description={Lang.t("matter.noContentYet")}/>
           )}
         </div>
         <Pagination

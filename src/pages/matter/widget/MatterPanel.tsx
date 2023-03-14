@@ -10,24 +10,26 @@ import AnimateUtil from "../../../common/util/AnimateUtil";
 import MessageBoxUtil from "../../../common/util/MessageBoxUtil";
 import Expanding from "../../widget/Expanding";
 import {
-  LockOutlined,
-  UnlockOutlined,
-  DownloadOutlined,
-  ExclamationCircleFilled,
-  LinkOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  InfoCircleOutlined,
-  EllipsisOutlined,
-  RedoOutlined,
   CloseCircleOutlined,
+  DeleteOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  EllipsisOutlined,
+  ExclamationCircleFilled,
+  InfoCircleOutlined,
+  LinkOutlined,
+  LockOutlined,
+  ProfileOutlined,
+  RedoOutlined,
+  UnlockOutlined,
 } from "@ant-design/icons";
-import { Modal, Checkbox, Tooltip, Dropdown, Menu, Space } from "antd";
-import { CheckboxChangeEvent } from "antd/es/checkbox";
+import {Checkbox, Dropdown, Form, Input, Menu, Modal, Space, Tooltip} from "antd";
+import {CheckboxChangeEvent} from "antd/es/checkbox";
 import SafeUtil from "../../../common/util/SafeUtil";
 import ClipboardUtil from "../../../common/util/ClipboardUtil";
 import Lang from "../../../common/model/global/Lang";
 import MatterDeleteModal from "./MatterDeleteModal";
+
 
 interface IProps {
   matter: Matter;
@@ -41,7 +43,8 @@ interface IProps {
   onGoToDirectory?: (id: string) => any;
 }
 
-interface IState { }
+interface IState {
+}
 
 export default class MatterPanel extends TankComponent<IProps, IState> {
   // 正在重命名的临时字段
@@ -53,13 +56,44 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
 
   inputRef = React.createRef<HTMLInputElement>();
 
+  // 修改的备注
+  editNote: string = ""
+
   constructor(props: IProps) {
     super(props);
     this.state = {};
   }
 
+  // 修改备注
+  editComment() {
+    Modal.confirm({
+      title: Lang.t("matter.editNote"),
+      icon: <ProfileOutlined/>,
+      content: (<Form initialValues={{note: this.props.matter.note}}>
+        <Form.Item label={Lang.t("matter.note")} name="note">
+          <Input.TextArea onChange={(e) => this.editNote = e.target.value}
+                          autoSize={{minRows: 3, maxRows: 8}} allowClear maxLength={1000} showCount></Input.TextArea>
+        </Form.Item>
+      </Form>),
+      afterClose: () => {
+        this.editNote = ""
+      },
+      onOk: () => {
+        return new Promise((resolve, _) => {
+          this.props.matter.httpEditNote(this.props.matter.uuid!, this.editNote, () => {
+            resolve("success")
+            MessageBoxUtil.success(Lang.t("operationSuccess"));
+            this.updateUI()
+          })
+        })
+      },
+      okText: Lang.t("matter.okText"),
+      cancelText: Lang.t("matter.cancelText")
+    })
+  }
+
   prepareRename() {
-    const { matter, director } = this.props;
+    const {matter, director} = this.props;
     if (director!.isEditing()) {
       console.error("导演正忙着，不予执行");
       return;
@@ -113,7 +147,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
   hardDeleteMatter() {
     Modal.confirm({
       title: Lang.t("actionCanNotRevertConfirm"),
-      icon: <ExclamationCircleFilled twoToneColor="#FFDC00" />,
+      icon: <ExclamationCircleFilled twoToneColor="#FFDC00"/>,
       onOk: () => {
         this.props.matter.httpDelete(() => {
           MessageBoxUtil.success(Lang.t("operationSuccess"));
@@ -126,7 +160,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
   recoveryMatter() {
     Modal.confirm({
       title: Lang.t("actionRecoveryConfirm"),
-      icon: <ExclamationCircleFilled twoToneColor="#FFDC00" />,
+      icon: <ExclamationCircleFilled twoToneColor="#FFDC00"/>,
       onOk: () => {
         this.props.matter.httpRecovery(() => {
           MessageBoxUtil.success(Lang.t("operationSuccess"));
@@ -146,7 +180,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
     if (this.renamingLoading) {
       return;
     }
-    const { matter, director } = this.props;
+    const {matter, director} = this.props;
     this.renamingLoading = true;
 
     matter.httpRename(
@@ -170,7 +204,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
   }
 
   finishCreateDirectory() {
-    const { matter, director, onCreateDirectoryCallback } = this.props;
+    const {matter, director, onCreateDirectoryCallback} = this.props;
     matter.name = this.renameMatterName;
     matter.httpCreateDirectory(
       () => {
@@ -188,7 +222,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
   }
 
   blurTrigger() {
-    const { matter, director } = this.props;
+    const {matter, director} = this.props;
     if (matter.editMode) {
       if (director!.createMode) {
         this.finishCreateDirectory();
@@ -251,7 +285,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
   }
 
   renderPcOperation() {
-    const { matter, recycleMode = false } = this.props;
+    const {matter, recycleMode = false} = this.props;
 
     // 文件操作在正常模式 or 回收站模式下不同，其中回收站模式只保留查看信息与彻底删除操作
     const handles = recycleMode ? (
@@ -323,6 +357,16 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
             }
           />
         </Tooltip>
+
+        <Tooltip title={Lang.t("matter.editNote")}>
+          <ProfileOutlined
+            className="btn-action"
+            onClick={(e) =>
+              SafeUtil.stopPropagationWrap(e)(this.editComment())
+            }
+          />
+        </Tooltip>
+
         <Tooltip title={Lang.t("matter.copyPath")}>
           <LinkOutlined
             className="btn-action"
@@ -373,7 +417,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
 
   // 文件操作在正常模式 or 回收站模式下不同，其中回收站模式只保留查看信息与彻底删除操作
   getHandles() {
-    const { matter, recycleMode = false } = this.props;
+    const {matter, recycleMode = false} = this.props;
     // 回收站模式
     if (recycleMode)
       return [
@@ -385,7 +429,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
             )
           }
         >
-          <InfoCircleOutlined className="btn-action mr5" />
+          <InfoCircleOutlined className="btn-action mr5"/>
           {Lang.t("matter.fileDetail")}
         </div>,
         <div
@@ -394,7 +438,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
             SafeUtil.stopPropagationWrap(e)(this.recoveryMatter())
           }
         >
-          <RedoOutlined className="btn-action mr5" />
+          <RedoOutlined className="btn-action mr5"/>
           {Lang.t("matter.recovery")}
         </div>,
         <div
@@ -403,7 +447,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
             SafeUtil.stopPropagationWrap(e)(this.hardDeleteMatter())
           }
         >
-          <CloseCircleOutlined className="btn-action mr5" />
+          <CloseCircleOutlined className="btn-action mr5"/>
           {Lang.t("matter.hardDelete")}
         </div>,
       ];
@@ -419,7 +463,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
               SafeUtil.stopPropagationWrap(e)(this.changePrivacy(false))
             }
           >
-            <UnlockOutlined className="btn-action mr5" />
+            <UnlockOutlined className="btn-action mr5"/>
             {Lang.t("matter.setPublic")}
           </div>
         ) : (
@@ -429,7 +473,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
               SafeUtil.stopPropagationWrap(e)(this.changePrivacy(true))
             }
           >
-            <LockOutlined className="btn-action mr5" />
+            <LockOutlined className="btn-action mr5"/>
             {Lang.t("matter.setPrivate")}
           </div>
         )
@@ -444,35 +488,46 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
           )
         }
       >
-        <InfoCircleOutlined className="btn-action mr5" />
+        <InfoCircleOutlined className="btn-action mr5"/>
         {Lang.t("matter.fileDetail")}
       </div>,
       <div
         className="cell-btn navy"
         onClick={(e) => SafeUtil.stopPropagationWrap(e)(this.prepareRename())}
       >
-        <EditOutlined className="btn-action mr5" />
+        <EditOutlined className="btn-action mr5"/>
         {Lang.t("matter.rename")}
       </div>,
+
+      // 备注
+      <div
+        className="cell-btn navy"
+        onClick={(e) => SafeUtil.stopPropagationWrap(e)(this.editComment())
+        }>
+        <ProfileOutlined
+          className="btn-action mr5"/>
+        {Lang.t("matter.editNote")}
+      </div>,
+
       <div
         className="cell-btn navy"
         onClick={(e) => SafeUtil.stopPropagationWrap(e)(this.clipboard())}
       >
-        <LinkOutlined className="btn-action mr5" />
+        <LinkOutlined className="btn-action mr5"/>
         {Lang.t("matter.copyLink")}
       </div>,
       <div
         className="cell-btn navy"
         onClick={(e) => SafeUtil.stopPropagationWrap(e)(matter.download())}
       >
-        <DownloadOutlined className="btn-action mr5" />
+        <DownloadOutlined className="btn-action mr5"/>
         {Lang.t("matter.download")}
       </div>,
       <div
         className="cell-btn text-danger"
         onClick={(e) => SafeUtil.stopPropagationWrap(e)(this.deleteMatter())}
       >
-        <DeleteOutlined className="btn-action mr5" />
+        <DeleteOutlined className="btn-action mr5"/>
         {Lang.t("matter.delete")}
       </div>
     );
@@ -480,7 +535,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
   }
 
   renderMobileOperation() {
-    const { matter, recycleMode = false } = this.props;
+    const {matter, recycleMode = false} = this.props;
 
     return (
       <div className="more-panel">
@@ -500,7 +555,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
   }
 
   render() {
-    const { matter } = this.props;
+    const {matter} = this.props;
 
     const menu = (
       <Menu>
@@ -529,7 +584,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
                     />
                   </span>
                   <span className="cell">
-                    <img className="matter-icon" src={matter.getIcon()} />
+                    <img className="matter-icon" src={matter.getIcon()}/>
                   </span>
                 </div>
               </div>
@@ -546,7 +601,7 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
                     SafeUtil.stopPropagationWrap(e)(this.toggleHandles())
                   }
                 >
-                  <EllipsisOutlined className="btn-action navy f18" />
+                  <EllipsisOutlined className="btn-action navy f18"/>
                 </span>
               </div>
 
@@ -572,11 +627,11 @@ export default class MatterPanel extends TankComponent<IProps, IState> {
                           <Tooltip
                             title={Lang.t("matter.publicFileEveryoneCanVisit")}
                           >
-                            <UnlockOutlined className="icon" />
+                            <UnlockOutlined className="icon"/>
                           </Tooltip>
                         )}
                       </span>
-                      <span style={{ color: "gray" }}>
+                      <span style={{color: "gray"}}>
                         {matter.note ? `${Lang.t("matter.note")}: ${matter.note}` : ""}
                       </span>
 

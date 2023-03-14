@@ -1,5 +1,5 @@
-import { message } from "antd";
-import axios, { CancelTokenSource } from "axios";
+import {message} from "antd";
+import axios, {CancelTokenSource} from "axios";
 import BaseEntity from "../base/BaseEntity";
 import Filter from "../base/filter/Filter";
 import HttpUtil from "../../util/HttpUtil";
@@ -66,6 +66,10 @@ export default class Matter extends BaseEntity {
   static URL_MATTER_DELETE = "/api/matter/delete";
   static URL_MATTER_DELETE_BATCH = "/api/matter/delete/batch";
   static URL_MATTER_RENAME = "/api/matter/rename";
+
+  // 修改备注
+  static URL_MATTER_EDIT_NOTE = "/api/matter/note";
+
   static URL_CHANGE_PRIVACY = "/api/matter/change/privacy";
   static URL_MATTER_MOVE = "/api/matter/move";
   static URL_MATTER_DOWNLOAD = "/api/matter/download";
@@ -95,6 +99,7 @@ export default class Matter extends BaseEntity {
   getTAG(): string {
     return "matter"
   }
+
   getForm(): any {
     return {
       userUuid: this.userUuid,
@@ -216,7 +221,7 @@ export default class Matter extends BaseEntity {
     finallyCallback?: any
   ) {
     let that = this;
-    let form = { userUuid: that.userUuid, name: that.name, puuid: that.puuid };
+    let form = {userUuid: that.userUuid, name: that.name, puuid: that.puuid};
 
     return this.httpPost(
       Matter.URL_MATTER_CREATE_DIRECTORY,
@@ -233,7 +238,7 @@ export default class Matter extends BaseEntity {
   httpSoftDelete(successCallback?: any, errorCallback?: any) {
     this.httpPost(
       Matter.URL_MATTER_SOFT_DELETE,
-      { uuid: this.uuid },
+      {uuid: this.uuid},
       function (response: any) {
         typeof successCallback === "function" && successCallback(response);
       },
@@ -248,7 +253,7 @@ export default class Matter extends BaseEntity {
   ) {
     this.httpPost(
       Matter.URL_MATTER_SOFT_DELETE_BATCH,
-      { uuids: uuids },
+      {uuids: uuids},
       function (response: any) {
         typeof successCallback === "function" && successCallback(response);
       },
@@ -259,7 +264,7 @@ export default class Matter extends BaseEntity {
   httpDelete(successCallback?: any, errorCallback?: any) {
     this.httpPost(
       Matter.URL_MATTER_DELETE,
-      { uuid: this.uuid },
+      {uuid: this.uuid},
       function (response: any) {
         typeof successCallback === "function" && successCallback(response);
       },
@@ -270,7 +275,7 @@ export default class Matter extends BaseEntity {
   httpDeleteBatch(uuids: string, successCallback?: any, errorCallback?: any) {
     this.httpPost(
       Matter.URL_MATTER_DELETE_BATCH,
-      { uuids: uuids },
+      {uuids: uuids},
       function (response: any) {
         typeof successCallback === "function" && successCallback(response);
       },
@@ -281,7 +286,7 @@ export default class Matter extends BaseEntity {
   httpRecovery(successCallback?: any, errorCallback?: any) {
     this.httpPost(
       Matter.URL_MATTER_RECOVERY,
-      { uuid: this.uuid },
+      {uuid: this.uuid},
       function (response: any) {
         typeof successCallback === "function" && successCallback(response);
       },
@@ -292,12 +297,27 @@ export default class Matter extends BaseEntity {
   httpRecoveryBatch(uuids: string, successCallback?: any, errorCallback?: any) {
     this.httpPost(
       Matter.URL_MATTER_RECOVERY_BATCH,
-      { uuids: uuids },
+      {uuids: uuids},
       function (response: any) {
         typeof successCallback === "function" && successCallback(response);
       },
       errorCallback
     );
+  }
+
+  // 修改备注
+  httpEditNote(uuid: string, note: string, successCallback?: any, errorCallback?: any) {
+    let that = this;
+    that.httpPost(
+      Matter.URL_MATTER_EDIT_NOTE,
+      {uuid, note},
+      function (response: any) {
+        console.log("edit success! ", response.data.data)
+        that.assign(response.data.data);
+        typeof successCallback === "function" && successCallback(response);
+      },
+      errorCallback
+    )
   }
 
   httpRename(
@@ -309,7 +329,7 @@ export default class Matter extends BaseEntity {
     let that = this;
     this.httpPost(
       Matter.URL_MATTER_RENAME,
-      { uuid: this.uuid, name: name },
+      {uuid: this.uuid, name: name},
       function (response: any) {
         that.assign(response.data.data);
         typeof successCallback === "function" && successCallback(response);
@@ -327,7 +347,7 @@ export default class Matter extends BaseEntity {
     let that = this;
     this.httpPost(
       Matter.URL_CHANGE_PRIVACY,
-      { uuid: this.uuid, privacy: privacy },
+      {uuid: this.uuid, privacy: privacy},
       function (response: any) {
         that.privacy = privacy;
         if (typeof successCallback === "function") {
@@ -347,7 +367,7 @@ export default class Matter extends BaseEntity {
     successCallback?: any,
     errorCallback?: any
   ) {
-    let form: any = { srcUuids: srcUuids };
+    let form: any = {srcUuids: srcUuids};
     if (destUuid) {
       form.destUuid = destUuid;
     } else {
@@ -497,7 +517,7 @@ export default class Matter extends BaseEntity {
     formData.append("alien", that.alien.toString());
     formData.append("privacy", that.privacy.toString());
     formData.append("note", that.note)
-    
+
     //闭包
     let lastTimeStamp = new Date().getTime();
     let lastSize = 0;
@@ -570,12 +590,12 @@ export default class Matter extends BaseEntity {
 
   getPreviewUrl(downloadTokenUuid?: string): string {
     return `${EnvUtil.currentHost()}/api/alien/preview/${this.uuid}/${this.name
-      }${downloadTokenUuid ? "?downloadTokenUuid=" + downloadTokenUuid : ""}`;
+    }${downloadTokenUuid ? "?downloadTokenUuid=" + downloadTokenUuid : ""}`;
   }
 
   getDownloadUrl(downloadTokenUuid?: string): string {
     return `${EnvUtil.currentHost()}/api/alien/download/${this.uuid}/${this.name
-      }${downloadTokenUuid ? "?downloadTokenUuid=" + downloadTokenUuid : ""}`;
+    }${downloadTokenUuid ? "?downloadTokenUuid=" + downloadTokenUuid : ""}`;
   }
 
   getShareDownloadUrl(
@@ -584,7 +604,7 @@ export default class Matter extends BaseEntity {
     shareRootUuid: string
   ): string {
     return `${EnvUtil.currentHost()}/api/alien/download/${this.uuid}/${this.name
-      }?shareUuid=${shareUuid}&shareCode=${shareCode}&shareRootUuid=${shareRootUuid}`;
+    }?shareUuid=${shareUuid}&shareCode=${shareCode}&shareRootUuid=${shareRootUuid}`;
   }
 
   getSharePreviewUrl(
@@ -593,6 +613,6 @@ export default class Matter extends BaseEntity {
     shareRootUuid: string
   ): string {
     return `${EnvUtil.currentHost()}/api/alien/preview/${this.uuid}/${this.name
-      }?shareUuid=${shareUuid}&shareCode=${shareCode}&shareRootUuid=${shareRootUuid}`;
+    }?shareUuid=${shareUuid}&shareCode=${shareCode}&shareRootUuid=${shareRootUuid}`;
   }
 }

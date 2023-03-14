@@ -59,12 +59,12 @@ export default class AboutModal extends TankComponent<IProps, IState> {
         <p className="item" onClick={() => this.changeLang()}>
           {Lang.getSingleton().lang === "zh" ? "English" : "中文"}
         </p>
-        <p className="brand">
-          Powered by <a target="_blank" href="https://github.com/eyebluecn/tank">
-          <img alt="logo" className="w30" src={DefaultLogoPng}/>
-          {Lang.t("eyeblueTank")}
-        </a>
-        </p>
+        {/*<p className="brand">*/}
+        {/*  Powered by <a target="_blank" href="https://github.com/eyebluecn/tank">*/}
+        {/*  <img alt="logo" className="w30" src={DefaultLogoPng}/>*/}
+        {/*  {Lang.t("eyeblueTank")}*/}
+        {/*</a>*/}
+        {/*</p>*/}
       </div>
     )
   }

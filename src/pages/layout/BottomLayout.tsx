@@ -44,11 +44,11 @@ export default class BottomLayout extends TankComponent<IProps, IState> {
         </span>
         {/*开源不易，请不要移除掉这里的代码，蓝眼云盘谢谢您! ^_^*/}
         {/*It is not easy to open source，please do not remove the following code, thank you! ^_^ */}
-        <span className="brand">
-          Powered by  <a target="_blank" href="https://github.com/eyebluecn/tank">
-            <img alt="logo" className="w30" src={DefaultLogoPng} />  {Lang.t("eyeblueTank")}
-          </a>
-        </span>
+        {/*<span className="brand">*/}
+        {/*  Powered by  <a target="_blank" href="https://github.com/eyebluecn/tank">*/}
+        {/*    <img alt="logo" className="w30" src={DefaultLogoPng} />  {Lang.t("eyeblueTank")}*/}
+        {/*  </a>*/}
+        {/*</span>*/}
       </div>
     );
   }
